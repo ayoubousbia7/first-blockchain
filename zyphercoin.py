@@ -77,9 +77,29 @@ class Blockchain:
         parsed_url = urlparse(address)
         self.nodes.add(parsed_url.netloc)
 
+    def replace_chain(self):
+        network = self.nodes
+        longest_chain = None
+        max_length = len(self.chain)
+        for node in network:
+            response = requests.get(f"http://{node}/get_chain")
+            if response.status_code == 200:
+                length = response.json()["length"]
+                chain = response.json()["chain"]
+                if length > max_length and self.is_chain_valid(chain):
+                    max_length = length
+                    longest_chain = chain
+        if longest_chain:
+            self.chain = longest_chain
+            return True
+
+        return False
+
 
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
+
+node_address = str(uuid4()).replace("-", "")
 
 blockchain = Blockchain()
 
@@ -90,6 +110,7 @@ def mine_block():
     previous_proof = previous_block["proof"]
     proof = blockchain.proof_of_work(previous_proof)
     previous_hash = blockchain.hash(previous_block)
+    blockchain.add_transaction(sender=node_address, receiver="ayoub", amount=1)
     block = blockchain.create_block(proof, previous_hash)
     response = {
         "message": "Congrats, you just have mined a block!",
@@ -97,6 +118,7 @@ def mine_block():
         "timestamp": block["timestamp"],
         "proof": block["proof"],
         "previous_hash": block["previous_hash"],
+        "transactions": block["transactions"],
     }
     return jsonify(response), 200
 
@@ -114,6 +136,49 @@ def is_valid():
         response = {"message": "All good. The blockchain is valid"}
     else:
         response = {"message": "Warning. The blockchain is not valid"}
+    return jsonify(response), 200
+
+
+@app.route("/add_transaction", methods=["POST"])
+def add_transaction():
+    json = request.get_json()
+    transaction_keys = ["sender", "receiver", "amount"]
+    if not all(key in json for key in transaction_keys):
+        return "Some elements of the transaction are missing", 400
+    index = blockchain.add_transaction(json["sender"], json["receiver"], json["amount"])
+    response = {"message": f"This transaction will be Added to block {index}"}
+    return jsonify(response), 201
+
+
+@app.route("/connect_node", methods=["POST"])
+def connect_node():
+    json = request.get_json()
+    nodes = json.get("nodes")
+    if nodes is None:
+        return "No node", 400
+    for node in nodes:
+        blockchain.add_node(node)
+
+    response = {
+        "message": "All node are now connected. The zypherchain blockchain now contains the following nodes:",
+        "total_nodes": list(blockchain.nodes),
+    }
+    return jsonify(response), 201
+
+
+@app.route("/replace_chain", methods=["GET"])
+def replace_chain():
+    is_chain_replaced = blockchain.replace_chain()
+    if is_chain_replaced:
+        response = {
+            "message": "The nodes had different so the chain was replaced by the longest one.",
+            "new_chain": blockchain.chain,
+        }
+    else:
+        response = {
+            "message": "All good. The chain is the largest one.",
+            "actual_chain": blockchain.chain,
+        }
     return jsonify(response), 200
 
 
