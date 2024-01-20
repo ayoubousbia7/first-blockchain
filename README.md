@@ -9,6 +9,7 @@ flask --app src/zyphercoin run
 ```
 
 ## Simulate transaction between nodes
+start first node on port 5001
 
 ```
 
