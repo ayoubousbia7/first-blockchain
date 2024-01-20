@@ -8,4 +8,10 @@ Implementation of a functional blockchain in python
 flask --app src/zyphercoin run
 ```
 
+## Simulate transaction between nodes
+
+```
+
+```
+
 
