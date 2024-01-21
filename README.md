@@ -19,5 +19,10 @@ start second node on port 5002
 ```
 
 ```
+start third node on port 5003
+
+```
+
+```
 
 
