@@ -12,7 +12,7 @@ flask --app src/zyphercoin run
 start first node on port 5001
 
 ```
-
+flask --app src/node_5001.py
 ```
 start second node on port 5002
 
