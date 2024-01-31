@@ -8,7 +8,7 @@ Implementation of a functional blockchain in python
 flask --app src/zyphercoin run
 ```
 
-## Simulate transaction between nodes
+## Simulate transactions between nodes
 start first node on port 5001
 
 ```
