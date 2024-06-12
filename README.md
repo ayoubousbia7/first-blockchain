@@ -1,7 +1,7 @@
 # The zypherchain blockchain 
 
 ## Overview
-Implementation of a functional blockchain in python
+Implementation of a conceptual blockchain in python
 
 ## To run the server
 ```
